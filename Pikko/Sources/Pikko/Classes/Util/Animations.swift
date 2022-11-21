@@ -6,7 +6,6 @@
 //
 
 import Foundation
-#if os(iOS)
 import UIKit
 
 /// Convenience class for animating our selectors.
@@ -24,5 +23,3 @@ class Animations {
         }
     }
 }
-
-#endif

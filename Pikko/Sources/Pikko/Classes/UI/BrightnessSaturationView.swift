@@ -6,7 +6,6 @@
 //
 
 import Foundation
-#if os(iOS)
 import UIKit
 
 /// Square view representing brightness and saturation.
@@ -171,7 +170,7 @@ internal class BrightnessSaturationView: UIView {
                                                 alpha: 1.0)
         
         if let color = selector.backgroundColor, let delegate = delegate {
-            delegate.writeBackColor(color: color)
+            
         }
     }
     
@@ -263,20 +262,3 @@ internal class BrightnessSaturationView: UIView {
         updateSelectorColor(point: newCenter)
     }
 }
-
-// MARK: HueDelegate methods.
-
-extension BrightnessSaturationView: HueDelegate {
-    internal func didUpdateHue(hue: CGFloat) {
-        DispatchQueue.main.async {
-            self.hue = hue
-            self.updateSelectorColor(point: self.selector.center)
-        }
-        
-        DispatchQueue.main.async {
-            self.saturationLayer?.colors = self.generateSaturationInterpolationArray(hue: hue)
-        }
-    }
-}
-
-#endif

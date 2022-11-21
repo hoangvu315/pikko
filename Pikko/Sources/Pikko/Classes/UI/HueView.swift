@@ -4,7 +4,7 @@
 //
 //  Created by Sandra & Johannes.
 //
-#if os(iOS)
+
 import UIKit
 
 /// Ring view representing the hue.
@@ -39,6 +39,10 @@ internal class HueView: UIView {
     /// Wrapper View holding the ring UIView.
     private var hueRingView: UIView?
     
+    private var centerCircle: UIView?
+    
+    private var percentageLabel: UILabel?
+    
     // MARK: Public attributes.
     
     /// Delegate that writes back changes of the hue value.
@@ -65,6 +69,7 @@ internal class HueView: UIView {
         super.init(frame: frame)
         
         createHueRing()
+        createInsideCircle()
         createSelector()
     }
     
@@ -107,6 +112,7 @@ internal class HueView: UIView {
         let x = location.x - center.x
         let y = location.y - center.y
         let angle = atan2(x, y) - CGFloat.pi * 0.5
+        updateColorTemp(angle: abs(atan2(x, y)))
         
         let position_y = sin(-1.0 * angle) * radius + center.x
         let position_x = cos(-1.0 * angle) * radius + center.y
@@ -140,8 +146,13 @@ internal class HueView: UIView {
             let selector = selector {
             selector.backgroundColor = color
             color.getHue(&hue, saturation: nil, brightness: nil, alpha: nil)
-            delegate?.didUpdateHue(hue: hue)
         }
+    }
+    
+    private func updateColorTemp(angle: CGFloat) {
+        let temp = 6500 - Int(angle / CGFloat.pi * 3500)
+        percentageLabel?.text = "\(temp)K"
+        delegate?.didUpdateHue(hue: temp)
     }
     
     // MARK: - UI setup methods.
@@ -149,33 +160,43 @@ internal class HueView: UIView {
     /// Creates the hue ring for the given hue.
     private func createHueRing() {
         hueRingView = UIView(frame: self.frame)
-        
-        for i in 0..<255 {
-            let layer = CALayer()
-            layer.backgroundColor = UIColor(hue: CGFloat(i)/255.0,
-                                            saturation: 1.0,
-                                            brightness: 1.0,
-                                            alpha: 1.0).cgColor
-            
-            let position = (CGFloat(i) / 255.0) * 360.0
-            let position_y = sin(position * CGFloat.pi / 180.0) * radius
-            let position_x = cos(position * CGFloat.pi / 180.0) * radius
-            
-            layer.frame = CGRect(x: position_x+offset_x,
-                                 y: position_y+offset_y,
-                                 width: borderWidth,
-                                 height: borderHeight)
-            
-            layer.transform = CATransform3DMakeRotation((position*CGFloat.pi) / 180.0, 0, 0, 1.0)
-            layer.allowsEdgeAntialiasing = true
-            
-            hueRingView!.layer.addSublayer(layer)
-        }
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = hueRingView!.frame
+        gradientLayer.cornerRadius = min(hueRingView!.frame.width / 2.0, hueRingView!.frame.height / 2.0)
+        gradientLayer.colors = [UIColor.init(red: 239/255, green: 195/255, blue: 128/255, alpha: 1).cgColor,
+                                UIColor.init(red: 128/255, green: 192/255, blue: 227/255, alpha: 1).cgColor]
+        hueRingView!.layer.addSublayer(gradientLayer)
 
         addSubview(hueRingView!)
     }
     
-    /// Sets the hue selector to a certain color.
+    func createInsideCircle() {
+        centerCircle = UIView(frame: CGRect(x: 10, y: 10, width: 100, height: 100))
+        centerCircle?.backgroundColor = .white
+        centerCircle?.translatesAutoresizingMaskIntoConstraints = false
+        hueRingView?.addSubview(centerCircle!)
+        
+        centerCircle?.centerXAnchor.constraint(equalTo: hueRingView!.centerXAnchor).isActive = true
+        centerCircle?.centerYAnchor.constraint(equalTo: hueRingView!.centerYAnchor).isActive = true
+        centerCircle?.widthAnchor.constraint(equalToConstant: 256).isActive = true
+        centerCircle?.heightAnchor.constraint(equalToConstant: 256).isActive = true
+        
+        centerCircle?.layer.cornerRadius = 128
+        
+        percentageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
+        percentageLabel?.translatesAutoresizingMaskIntoConstraints = false
+        centerCircle?.addSubview(percentageLabel!)
+        
+        percentageLabel?.font = percentageLabel!.font.withSize(28)
+        percentageLabel?.textAlignment = .center
+        percentageLabel?.centerXAnchor.constraint(equalTo: centerCircle!.centerXAnchor).isActive = true
+        percentageLabel?.centerYAnchor.constraint(equalTo: centerCircle!.centerYAnchor).isActive = true
+        percentageLabel?.widthAnchor.constraint(equalToConstant: 120).isActive = true
+        percentageLabel?.heightAnchor.constraint(equalToConstant: 47).isActive = true
+        percentageLabel?.text = "3000K"
+    }
+    
+    /// Sets the hue sele≠ctor to a certain color.
     ///
     /// - Parameter color: UIColor for the selector position.
     internal func setColor(_ color: UIColor) {
@@ -189,5 +210,3 @@ internal class HueView: UIView {
         updateColor(point: newCenter)
     }
 }
-
-#endif

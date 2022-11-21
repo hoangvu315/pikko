@@ -6,12 +6,9 @@
 //
 
 import Foundation
-#if os(iOS)
 import UIKit
 
 /// Delegate which propagates color changes of the colorpicker to its delegate.
 public protocol PikkoDelegate {
-    func writeBackColor(color: UIColor)
+    func updateColorTemp(_ value: Int)
 }
-
-#endif

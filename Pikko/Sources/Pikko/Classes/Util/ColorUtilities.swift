@@ -6,7 +6,6 @@
 //
 
 import Foundation
-#if os(iOS)
 import UIKit
 
 /// Convenience class for UIColor assessment on UIViews.
@@ -45,5 +44,3 @@ internal class ColorUtilities {
         return nil
     }
 }
-
-#endif
